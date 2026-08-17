@@ -1,0 +1,16 @@
+{
+  "backend_mode": "apikey",
+  "vllm": {
+    "base_url": "http://localhost:8000/v1",
+    "api_key": "EMPTY",
+    "model": "Qwen3-8B",
+    "temperature": 0.7
+  },
+  "apikey": {
+    "base_url": "https://api.deepseek.com/v1",
+    "api_key": "",
+    "model": "deepseek-v4-flash",
+    "temperature": 0.7
+  },
+  "system_prompt": "你是历史研究助手。请严格依据提供的史料上下文回答用户问题；若上下文不足以回答，请如实说明，不要编造。回答中可注明所引用的史料来源。"
+}

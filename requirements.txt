@@ -1,0 +1,5 @@
+streamlit>=1.36
+chromadb==1.5.9
+pywebview>=5.0
+# 仅用于生成 Windows 分发包；日常运行不需要单独安装。
+# pyinstaller>=6.0
