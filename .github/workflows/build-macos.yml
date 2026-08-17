@@ -1,0 +1,77 @@
+name: Build macOS DMG
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: intel
+            runner: macos-13
+          - arch: apple-silicon
+            runner: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build application bundle
+        run: |
+          pyinstaller --noconfirm --clean --windowed \
+            --name HistoricalResearchRAG \
+            --collect-all streamlit \
+            --collect-all chromadb \
+            --collect-all webview \
+            --add-data "app.py:." \
+            --add-data "core.py:." \
+            --add-data "style.py:." \
+            --add-data "llm.py:." \
+            --add-data "importer.py:." \
+            --add-data "login.py:." \
+            --add-data "page_browse.py:." \
+            --add-data "page_manage.py:." \
+            --add-data "page_search.py:." \
+            --add-data "page_import.py:." \
+            --add-data "page_rag.py:." \
+            --add-data "config.json:." \
+            desktop_app.py
+
+      - name: Create DMG
+        run: |
+          mkdir -p dmg-root
+          cp -R dist/HistoricalResearchRAG.app dmg-root/
+          ln -s /Applications dmg-root/Applications
+          mkdir -p release
+          hdiutil create \
+            -volname "Historical Research RAG" \
+            -srcfolder dmg-root \
+            -ov -format UDZO \
+            "release/HistoricalResearchRAG-macOS-${{ matrix.arch }}.dmg"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HistoricalResearchRAG-macOS-${{ matrix.arch }}
+          path: release/*.dmg
+
